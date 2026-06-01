@@ -1,4 +1,5 @@
 import { Injectable, ServiceUnavailableException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import FormData from 'form-data';
 
@@ -6,8 +7,8 @@ import FormData from 'form-data';
 export class StorageClientService {
   private readonly baseUrl: string;
 
-  constructor() {
-    this.baseUrl = process.env.STORAGE_SERVICE_URL ?? 'http://localhost:3001';
+  constructor(config: ConfigService) {
+    this.baseUrl = config.get<string>('STORAGE_SERVICE_URL') ?? 'http://localhost:3001';
   }
 
   async uploadFile(

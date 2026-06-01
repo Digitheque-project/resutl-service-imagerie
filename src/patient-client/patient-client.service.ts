@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 
 @Injectable()
@@ -10,10 +11,10 @@ export class PatientClientService {
   private token: string | null = null;
   private tokenExpiresAt: number = 0;
 
-  constructor() {
-    this.baseUrl = process.env.PATIENT_API_URL ?? 'https://prescription-sih-api-0yj3.onrender.com';
-    this.email   = process.env.PATIENT_API_EMAIL ?? '';
-    this.password = process.env.PATIENT_API_PASSWORD ?? '';
+  constructor(config: ConfigService) {
+    this.baseUrl  = config.get<string>('PATIENT_API_URL') ?? 'https://prescription-sih-api-0yj3.onrender.com';
+    this.email    = config.get<string>('PATIENT_API_EMAIL') ?? '';
+    this.password = config.get<string>('PATIENT_API_PASSWORD') ?? '';
   }
 
   private async ensureToken(): Promise<string> {
