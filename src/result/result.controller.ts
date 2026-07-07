@@ -57,7 +57,7 @@ export class ResultController {
       properties: {
         files:       { type: 'array', items: { type: 'string', format: 'binary' } },
         patientId:   { type: 'string', example: '41711ec5-7f87-4cbc-9200-55849a597dc0' },
-        doctorId:    { type: 'integer', example: 1 },
+        doctorId:    { type: 'string', example: '72d49761-2a65-446d-b025-15a74cac1ad4' },
         description: { type: 'string', example: 'Radio thorax' },
       },
     },
@@ -66,7 +66,7 @@ export class ResultController {
   async createWithImagingUpload(
     @UploadedFiles() files: Express.Multer.File[],
     @Body('patientId') patientId: string,
-    @Body('doctorId') doctorId: number,
+    @Body('doctorId') doctorId: string,
     @Body('description') description: string,
   ) {
     return this.service.createWithImagingAndFiles(

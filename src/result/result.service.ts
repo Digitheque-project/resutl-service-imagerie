@@ -219,7 +219,7 @@ export class ResultService {
   // ── CREATE RESULT WITH IMAGING + FILE UPLOAD ─────────────
   async createWithImagingAndFiles(
     patientId: string,
-    doctorId: number,
+    doctorId: string,
     description: string | undefined,
     files: Express.Multer.File[],
   ): Promise<Result> {

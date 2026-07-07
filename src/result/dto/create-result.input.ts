@@ -1,4 +1,4 @@
-import { IsEnum, IsInt, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { ResultType } from '../result.enums';
 
@@ -7,9 +7,9 @@ export class CreateResultInput {
   @IsUUID()
   patientId!: string;
 
-  @ApiProperty({ example: 1 })
-  @IsInt()
-  doctorId!: number;
+  @ApiProperty({ example: '72d49761-2a65-446d-b025-15a74cac1ad4' })
+  @IsString()
+  doctorId!: string;
 
   @ApiProperty({ enum: ResultType, example: ResultType.LAB })
   @IsEnum(ResultType)

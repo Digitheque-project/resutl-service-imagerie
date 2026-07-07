@@ -18,8 +18,8 @@ export class Result {
   @Column({ nullable: true })
   patientId!: string;
 
-  @Column()
-  doctorId!: number;
+  @Column({ type: 'varchar', nullable: true })
+  doctorId!: string | null;
 
   @Column({ type: 'enum', enum: ResultType })
   type!: ResultType;
