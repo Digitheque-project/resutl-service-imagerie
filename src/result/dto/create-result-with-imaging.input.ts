@@ -32,6 +32,11 @@ export class CreateResultWithImagingInput {
   @IsString()
   examenId?: string;
 
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  prescriberId?: string;
+
   @ApiProperty({ type: CreateImagingData })
   @ValidateNested()
   @Type(() => CreateImagingData)

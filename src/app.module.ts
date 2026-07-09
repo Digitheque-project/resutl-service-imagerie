@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { ResultModule } from './result/result.module';
+import { ArchiveModule } from './archive/archive.module';
 import { StorageClientModule } from './storage-client/storage-client.module';
 import { UploadTestModule } from './upload-test/upload-test.module';
 import { PatientClientModule } from './patient-client/patient-client.module';
@@ -34,6 +35,7 @@ import { PatientClientModule } from './patient-client/patient-client.module';
       },
     }),
 
+    ArchiveModule,
     StorageClientModule,
     UploadTestModule,
     PatientClientModule,

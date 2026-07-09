@@ -38,12 +38,13 @@ export class ResultService {
   // ── CREATE RESULT ────────────────────────────────────────
   async create(input: CreateResultInput): Promise<Result> {
     const result = this.resultRepo.create({
-      patientId:   input.patientId,
-      doctorId:    input.doctorId,
-      type:        input.type,
-      description: input.description,
-      conclusion:  input.conclusion,
-      examenId:    input.examenId,
+      patientId:    input.patientId,
+      doctorId:     input.doctorId,
+      type:         input.type,
+      description:  input.description,
+      conclusion:   input.conclusion,
+      examenId:     input.examenId,
+      prescriberId: input.prescriberId,
     });
     return this.resultRepo.save(result);
   }
@@ -226,6 +227,7 @@ export class ResultService {
     conclusion: string | undefined,
     files: Express.Multer.File[],
     examenId?: string,
+    prescriberId?: string,
   ): Promise<Result> {
     const urls = await Promise.all(
       files.map((f) =>
@@ -240,6 +242,7 @@ export class ResultService {
       description,
       conclusion,
       examenId,
+      prescriberId,
       imagingData: {
         description: description || (files[0]?.originalname ?? ''),
         imageUrl: urls.map((u) => u.url),

@@ -8,6 +8,7 @@ import { ApiTags, ApiOperation, ApiParam, ApiConsumes, ApiBody } from '@nestjs/s
 import { ResultService } from './result.service';
 import { StorageClientService } from '../storage-client/storage-client.service';
 import { PatientClientService } from '../patient-client/patient-client.service';
+import { ArchiveService } from '../archive/archive.service';
 import { UpdateResultInput } from './dto/update-result.input';
 import { UpdateLabInput } from './dto/update-lab.input';
 import { CreateResultWithLabInput } from './dto/create-result-with-lab.input';
@@ -19,6 +20,7 @@ export class ResultController {
     private readonly service: ResultService,
     private readonly storageClient: StorageClientService,
     private readonly patientClient: PatientClientService,
+    private readonly archiveService: ArchiveService,
   ) {}
 
   // ── GET ──
@@ -70,10 +72,11 @@ export class ResultController {
     @Body('description') description: string,
     @Body('conclusion') conclusion: string,
     @Body('examenId') examenId: string,
+    @Body('prescriberId') prescriberId: string,
   ) {
     return this.service.createWithImagingAndFiles(
       patientId, doctorId, description, conclusion,
-      files, examenId,
+      files, examenId, prescriberId,
     );
   }
 
@@ -91,8 +94,14 @@ export class ResultController {
   @Patch(':id')
   @ApiOperation({ summary: 'Update a result' })
   @ApiParam({ name: 'id', type: Number })
-  update(@Param('id') id: number, @Body() input: UpdateResultInput) {
-    return this.service.update(id, input);
+  async update(@Param('id') id: number, @Body() input: UpdateResultInput) {
+    const updated = await this.service.update(id, input);
+    if (updated.description && updated.conclusion) {
+      try {
+        await this.archiveService.archiveFromResult(updated);
+      } catch { /* archive failure is non-blocking */ }
+    }
+    return updated;
   }
 
   @Patch(':id/status')

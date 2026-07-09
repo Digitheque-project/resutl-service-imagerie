@@ -29,4 +29,9 @@ export class CreateResultInput {
   @IsOptional()
   @IsString()
   examenId?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  prescriberId?: string;
 }

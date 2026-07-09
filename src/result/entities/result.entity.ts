@@ -33,6 +33,9 @@ export class Result {
   @Column({ nullable: true })
   examenId?: string;
 
+  @Column({ nullable: true })
+  prescriberId?: string;
+
   @Column({
     type: 'enum',
     enum: ResultStatus,
