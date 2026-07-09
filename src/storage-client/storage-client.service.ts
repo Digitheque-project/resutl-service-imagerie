@@ -1,14 +1,15 @@
 import { Injectable, ServiceUnavailableException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import axios from 'axios';
-import FormData from 'form-data';
+import * as fs from 'fs';
+import * as path from 'path';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class StorageClientService {
-  private readonly baseUrl: string;
+  private readonly uploadDir: string;
 
-  constructor(config: ConfigService) {
-    this.baseUrl = config.get<string>('STORAGE_SERVICE_URL') ?? 'http://localhost:3001';
+  constructor() {
+    this.uploadDir = path.resolve(process.env.UPLOAD_DIR || './uploads');
+    fs.mkdirSync(this.uploadDir, { recursive: true });
   }
 
   async uploadFile(
@@ -17,20 +18,18 @@ export class StorageClientService {
     mimeType: string,
   ): Promise<{ fileName: string; url: string; path: string }> {
     try {
-      const form = new FormData();
-      form.append('file', buffer, {
-        filename: originalName,
-        contentType: mimeType,
-      });
+      const ext = path.extname(originalName) || '.bin';
+      const fileName = `${randomUUID()}${ext}`;
+      const filePath = path.join(this.uploadDir, fileName);
+      fs.writeFileSync(filePath, buffer);
 
-      const { data } = await axios.post(`${this.baseUrl}/files/upload`, form, {
-        headers: form.getHeaders(),
-      });
+      const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+      const url = `http://localhost:${port}/uploads/${fileName}`;
 
-      return data;
+      return { fileName, url, path: filePath };
     } catch (error) {
       throw new ServiceUnavailableException(
-        `Storage service unavailable: ${error instanceof Error ? error.message : 'unknown error'}`,
+        `Failed to save file locally: ${error instanceof Error ? error.message : 'unknown error'}`,
       );
     }
   }
