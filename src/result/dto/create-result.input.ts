@@ -24,4 +24,9 @@ export class CreateResultInput {
   @IsOptional()
   @IsString()
   conclusion?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  examenId?: string;
 }

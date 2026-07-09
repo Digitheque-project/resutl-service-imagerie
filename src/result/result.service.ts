@@ -42,6 +42,8 @@ export class ResultService {
       doctorId:    input.doctorId,
       type:        input.type,
       description: input.description,
+      conclusion:  input.conclusion,
+      examenId:    input.examenId,
     });
     return this.resultRepo.save(result);
   }
@@ -223,6 +225,7 @@ export class ResultService {
     description: string | undefined,
     conclusion: string | undefined,
     files: Express.Multer.File[],
+    examenId?: string,
   ): Promise<Result> {
     const urls = await Promise.all(
       files.map((f) =>
@@ -236,10 +239,18 @@ export class ResultService {
       type: ResultType.IMAGING,
       description,
       conclusion,
+      examenId,
       imagingData: {
         description: description || (files[0]?.originalname ?? ''),
         imageUrl: urls.map((u) => u.url),
       },
+    });
+  }
+
+  async findByExamen(examenId: string): Promise<Result | null> {
+    return this.resultRepo.findOne({
+      where: { examenId },
+      relations: { lab: true, imaging: true },
     });
   }
 

@@ -30,6 +30,9 @@ export class Result {
   @Column({ nullable: true })
   conclusion?: string;
 
+  @Column({ nullable: true })
+  examenId?: string;
+
   @Column({
     type: 'enum',
     enum: ResultStatus,

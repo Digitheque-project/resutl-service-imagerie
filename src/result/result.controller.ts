@@ -69,11 +69,22 @@ export class ResultController {
     @Body('doctorId') doctorId: string,
     @Body('description') description: string,
     @Body('conclusion') conclusion: string,
+    @Body('examenId') examenId: string,
   ) {
     return this.service.createWithImagingAndFiles(
       patientId, doctorId, description, conclusion,
-      files,
+      files, examenId,
     );
+  }
+
+  @Get('by-examen/:examenId')
+  @ApiOperation({ summary: 'Get a result by examen ID' })
+  @ApiParam({ name: 'examenId', type: String })
+  async findByExamen(@Param('examenId') examenId: string) {
+    const result = await this.service.findByExamen(examenId);
+    if (!result) return null;
+    const patient = result.patientId ? await this.patientClient.getPatient(result.patientId) : null;
+    return { ...result, patient };
   }
 
   // ── UPDATE ──
