@@ -19,4 +19,9 @@ export class CreateResultInput {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  conclusion?: string;
 }

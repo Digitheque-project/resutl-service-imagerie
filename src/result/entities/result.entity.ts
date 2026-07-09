@@ -27,6 +27,9 @@ export class Result {
   @Column({ nullable: true })
   description?: string;
 
+  @Column({ nullable: true })
+  conclusion?: string;
+
   @Column({
     type: 'enum',
     enum: ResultStatus,

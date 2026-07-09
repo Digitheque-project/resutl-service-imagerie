@@ -22,6 +22,11 @@ export class CreateResultWithImagingInput {
   @IsString()
   description?: string;
 
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  conclusion?: string;
+
   @ApiProperty({ type: CreateImagingData })
   @ValidateNested()
   @Type(() => CreateImagingData)

@@ -68,9 +68,10 @@ export class ResultController {
     @Body('patientId') patientId: string,
     @Body('doctorId') doctorId: string,
     @Body('description') description: string,
+    @Body('conclusion') conclusion: string,
   ) {
     return this.service.createWithImagingAndFiles(
-      patientId, doctorId, description,
+      patientId, doctorId, description, conclusion,
       files,
     );
   }

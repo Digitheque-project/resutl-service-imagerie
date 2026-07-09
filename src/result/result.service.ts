@@ -221,6 +221,7 @@ export class ResultService {
     patientId: string,
     doctorId: string,
     description: string | undefined,
+    conclusion: string | undefined,
     files: Express.Multer.File[],
   ): Promise<Result> {
     const urls = await Promise.all(
@@ -234,6 +235,7 @@ export class ResultService {
       doctorId,
       type: ResultType.IMAGING,
       description,
+      conclusion,
       imagingData: {
         description: description || (files[0]?.originalname ?? ''),
         imageUrl: urls.map((u) => u.url),
