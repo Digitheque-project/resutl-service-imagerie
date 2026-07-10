@@ -6,5 +6,6 @@ export enum ResultType {
 export enum ResultStatus {
   PENDING   = 'PENDING',
   COMPLETE  = 'COMPLETE',
+  VALIDATED = 'VALIDATED',
   CANCELLED = 'CANCELLED',
 }

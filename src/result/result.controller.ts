@@ -96,11 +96,11 @@ export class ResultController {
   @Patch(':id')
   @ApiOperation({ summary: 'Update a result' })
   @ApiParam({ name: 'id', type: Number })
-  async update(@Param('id') id: number, @Body() input: UpdateResultInput) {
+  async update(@Param('id') id: number, @Body() input: UpdateResultInput, @Body('examType') examType?: string) {
     const updated = await this.service.update(id, input);
     if (updated.description && updated.conclusion) {
       try {
-        await this.archiveService.archiveFromResult(updated, input.examType);
+        await this.archiveService.archiveFromResult(updated, examType);
       } catch { /* archive failure is non-blocking */ }
     }
     return updated;

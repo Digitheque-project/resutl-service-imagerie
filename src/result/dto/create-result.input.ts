@@ -38,10 +38,5 @@ export class CreateResultInput {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
-  examType?: string;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsString()
   status?: string;
 }
