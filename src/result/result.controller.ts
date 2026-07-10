@@ -60,6 +60,7 @@ export class ResultController {
         files:       { type: 'array', items: { type: 'string', format: 'binary' } },
         patientId:   { type: 'string', example: '41711ec5-7f87-4cbc-9200-55849a597dc0' },
         doctorId:    { type: 'string', example: '72d49761-2a65-446d-b025-15a74cac1ad4' },
+        type:        { type: 'string', example: 'SCANNER' },
         description: { type: 'string', example: 'Radio thorax' },
       },
     },
@@ -69,13 +70,14 @@ export class ResultController {
     @UploadedFiles() files: Express.Multer.File[],
     @Body('patientId') patientId: string,
     @Body('doctorId') doctorId: string,
+    @Body('type') type: string,
     @Body('description') description: string,
     @Body('conclusion') conclusion: string,
     @Body('examenId') examenId: string,
     @Body('prescriberId') prescriberId: string,
   ) {
     return this.service.createWithImagingAndFiles(
-      patientId, doctorId, description, conclusion,
+      patientId, doctorId, type, description, conclusion,
       files, examenId, prescriberId,
     );
   }
@@ -98,7 +100,7 @@ export class ResultController {
     const updated = await this.service.update(id, input);
     if (updated.description && updated.conclusion) {
       try {
-        await this.archiveService.archiveFromResult(updated);
+        await this.archiveService.archiveFromResult(updated, input.examType);
       } catch { /* archive failure is non-blocking */ }
     }
     return updated;

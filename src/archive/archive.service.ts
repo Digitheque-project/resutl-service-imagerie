@@ -16,7 +16,7 @@ export class ArchiveService {
     private readonly patientClient: PatientClientService,
   ) {}
 
-  async archiveFromResult(result: Result): Promise<Archive> {
+  async archiveFromResult(result: Result, examType?: string): Promise<Archive> {
     let patient: Record<string, unknown> | null = null;
     try {
       patient = await this.patientClient.getPatient(result.patientId);
@@ -31,7 +31,7 @@ export class ArchiveService {
       patientFirstName: patient?.firstName as string ?? patient?.prenom as string ?? undefined,
       patientLastName:  patient?.lastName as string ?? patient?.nom as string ?? undefined,
       patientAge:       patient?.age as number ?? undefined,
-      examType:     result.type,
+      examType:     examType ?? result.type,
       date:         new Date().toISOString(),
       prescriberId: result.prescriberId,
       examinerId:   result.doctorId ?? undefined,

@@ -223,6 +223,7 @@ export class ResultService {
   async createWithImagingAndFiles(
     patientId: string,
     doctorId: string,
+    type: string,
     description: string | undefined,
     conclusion: string | undefined,
     files: Express.Multer.File[],
@@ -238,7 +239,7 @@ export class ResultService {
     return this.createWithImaging({
       patientId,
       doctorId,
-      type: ResultType.IMAGING,
+      type: type as ResultType,
       description,
       conclusion,
       examenId,

@@ -34,4 +34,9 @@ export class CreateResultInput {
   @IsOptional()
   @IsString()
   prescriberId?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  examType?: string;
 }
