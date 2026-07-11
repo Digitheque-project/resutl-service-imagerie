@@ -1,0 +1,376 @@
+{
+    "institution": "CHU Andrainjato Fianarantsoa",
+    "document_title": "RAPPORT HEBDOMADAIRE DU SERVICE LABORATOIRE",
+    "date_range": "01 er AU 7 JUIN 2026",
+    "statistiques_hebdomadaires": {
+        "headers": [
+            "Jour",
+            "Carnet d'ordonnance reçu",
+            "Prescription reçu",
+            "Prescription ou demande servie: externe",
+            "Prescription ou demande servie: hospitalisé",
+            "Prescription ou demande servie: urgence",
+            "Prescription ou demande non servi: externe",
+            "Prescription ou demande non servi: hospitalisé",
+            "Prescription ou demande non servi: urgence",
+            "Démunis",
+            "Liste des examens demandés mais indisponible"
+        ],
+        "rows": [
+            {
+                "jour": "Lundi",
+                "carnet_ordonnance_recu": null,
+                "prescription_recu": null,
+                "servie_externe": 7,
+                "servie_hospitalise": 13,
+                "servie_urgence": null,
+                "non_servie_externe": null,
+                "non_servie_hospitalise": null,
+                "non_servie_urgence": null,
+                "demunis": null,
+                "examens_indisponibles": null
+            },
+            {
+                "jour": "Mardi",
+                "carnet_ordonnance_recu": null,
+                "prescription_recu": null,
+                "servie_externe": 5,
+                "servie_hospitalise": 16,
+                "servie_urgence": null,
+                "non_servie_externe": null,
+                "non_servie_hospitalise": null,
+                "non_servie_urgence": null,
+                "demunis": null,
+                "examens_indisponibles": null
+            },
+            {
+                "jour": "Mer",
+                "carnet_ordonnance_recu": null,
+                "prescription_recu": null,
+                "servie_externe": 3,
+                "servie_hospitalise": 10,
+                "servie_urgence": null,
+                "non_servie_externe": null,
+                "non_servie_hospitalise": null,
+                "non_servie_urgence": null,
+                "demunis": null,
+                "examens_indisponibles": null
+            },
+            {
+                "jour": "Jeudi",
+                "carnet_ordonnance_recu": null,
+                "prescription_recu": null,
+                "servie_externe": 1,
+                "servie_hospitalise": 8,
+                "servie_urgence": null,
+                "non_servie_externe": null,
+                "non_servie_hospitalise": null,
+                "non_servie_urgence": null,
+                "demunis": null,
+                "examens_indisponibles": null
+            },
+            {
+                "jour": "Ven.",
+                "carnet_ordonnance_recu": null,
+                "prescription_recu": null,
+                "servie_externe": 3,
+                "servie_hospitalise": 11,
+                "servie_urgence": null,
+                "non_servie_externe": null,
+                "non_servie_hospitalise": null,
+                "non_servie_urgence": null,
+                "demunis": null,
+                "examens_indisponibles": null
+            },
+            {
+                "jour": "Sam",
+                "carnet_ordonnance_recu": null,
+                "prescription_recu": null,
+                "servie_externe": null,
+                "servie_hospitalise": 7,
+                "servie_urgence": null,
+                "non_servie_externe": null,
+                "non_servie_hospitalise": null,
+                "non_servie_urgence": null,
+                "demunis": null,
+                "examens_indisponibles": null
+            },
+            {
+                "jour": "Dim",
+                "carnet_ordonnance_recu": null,
+                "prescription_recu": null,
+                "servie_externe": null,
+                "servie_hospitalise": 1,
+                "servie_urgence": null,
+                "non_servie_externe": null,
+                "non_servie_hospitalise": null,
+                "non_servie_urgence": null,
+                "demunis": null,
+                "examens_indisponibles": null
+            },
+            {
+                "jour": "HEBDO",
+                "carnet_ordonnance_recu": null,
+                "prescription_recu": null,
+                "servie_externe": 19,
+                "servie_hospitalise": 67,
+                "servie_urgence": null,
+                "non_servie_externe": null,
+                "non_servie_hospitalise": null,
+                "non_servie_urgence": null,
+                "demunis": null,
+                "examens_indisponibles": null
+            }
+        ]
+    },
+    "resultats_positifs_ou_pathologiques": {
+        "HEMATOLOGIE": [
+            {
+                "examen": "NFS",
+                "nombre": 34
+            },
+            {
+                "examen": "VS",
+                "nombre": null
+            },
+            {
+                "examen": "TQ/TP/INR",
+                "nombre": 26
+            },
+            {
+                "examen": "TCA",
+                "nombre": 23
+            },
+            {
+                "examen": "Myélogramme",
+                "nombre": null
+            },
+            {
+                "examen": "Taux de Réticulocytes",
+                "nombre": 1
+            },
+            {
+                "examen": "Groupage sanguin",
+                "nombre": 24
+            },
+            {
+                "examen": "Test d'EMMEL",
+                "nombre": 1
+            },
+            {
+                "examen": "Test d'Itano",
+                "nombre": 1
+            }
+        ],
+        "BIOCHIMIE / Sang": [
+            {
+                "examen": "CRP",
+                "nombre": 35
+            },
+            {
+                "examen": "Glycémie",
+                "nombre": 9
+            },
+            {
+                "examen": "Azotémie",
+                "nombre": 22
+            },
+            {
+                "examen": "Calcémie",
+                "nombre": 7
+            },
+            {
+                "examen": "Magnésémie",
+                "nombre": 1
+            },
+            {
+                "examen": "Cholestérolémie",
+                "nombre": 4
+            },
+            {
+                "examen": "LDL",
+                "nombre": 4
+            },
+            {
+                "examen": "HDL",
+                "nombre": 4
+            },
+            {
+                "examen": "Triglycéridémie",
+                "nombre": 4
+            },
+            {
+                "examen": "Uricémie",
+                "nombre": 6
+            },
+            {
+                "examen": "Créatininémie",
+                "nombre": 35
+            },
+            {
+                "examen": "Bilirubinémie Bil T",
+                "nombre": 7
+            },
+            {
+                "examen": "Bilirubinémie Bil D",
+                "nombre": 7
+            },
+            {
+                "examen": "Phosphorémie",
+                "nombre": 6
+            },
+            {
+                "examen": "Protidémie",
+                "nombre": 1
+            },
+            {
+                "examen": "Fer/Ferritime",
+                "nombre": "1/1"
+            },
+            {
+                "examen": "Transaminases ASAT",
+                "nombre": 10
+            },
+            {
+                "examen": "Transaminases ALAT",
+                "nombre": 10
+            },
+            {
+                "examen": "Gamma GT",
+                "nombre": 4
+            },
+            {
+                "examen": "PAL",
+                "nombre": 4
+            },
+            {
+                "examen": "Lipase",
+                "nombre": 2
+            },
+            {
+                "examen": "D-DIMER",
+                "nombre": null
+            }
+        ],
+        "URINE": [
+            {
+                "examen": "Albumine",
+                "nombre": 6
+            },
+            {
+                "examen": "Hémoglobine Glyquée",
+                "nombre": 3
+            },
+            {
+                "examen": "LDH",
+                "nombre": 2
+            },
+            {
+                "examen": "Bandelettes Urinaires",
+                "nombre": 9
+            },
+            {
+                "examen": "TROPONINE",
+                "nombre": 5
+            },
+            {
+                "examen": "Protéinurie de 24h",
+                "nombre": 5
+            }
+        ],
+        "LIQUIDE DE PONCTION": [
+            {
+                "examen": "Protéines L.P",
+                "nombre": 3
+            },
+            {
+                "examen": "Cytologie L.P",
+                "nombre": 4
+            },
+            {
+                "examen": "Critère de Light",
+                "nombre": null
+            },
+            {
+                "examen": "Examen du LCR",
+                "nombre": null
+            }
+        ],
+        "PARASITOLOGIE": [
+            {
+                "examen": "Frottis - Goutte épaisse",
+                "nombre": null
+            },
+            {
+                "examen": "Tests de diagnostic rapide",
+                "nombre": null,
+                "Test 101": null,
+                "Test 110": null,
+                "Test 111": null
+            },
+            {
+                "examen": "Recherche de Bilharzies (EPU)",
+                "nombre": null
+            }
+        ],
+        "BACTERIOLOGIE": [
+            {
+                "examen": "Selles KAOP",
+                "nombre": 1
+            },
+            {
+                "examen": "Pus",
+                "nombre": 5
+            }
+        ],
+        "SEROLOGIE": [
+            {
+                "examen": "ECBU",
+                "nombre": 4
+            },
+            {
+                "examen": "HEP C",
+                "nombre": 4
+            },
+            {
+                "examen": "RPR",
+                "nombre": 1
+            },
+            {
+                "examen": "TPHA",
+                "nombre": 1
+            },
+            {
+                "examen": "AgHBs",
+                "nombre": 5
+            },
+            {
+                "examen": "ASLO",
+                "nombre": null
+            },
+            {
+                "examen": "Sérologie VIH/Sida Test 1",
+                "nombre": 6
+            },
+            {
+                "examen": "TSH",
+                "nombre": 2
+            },
+            {
+                "examen": "T3",
+                "nombre": 1
+            },
+            {
+                "examen": "T4",
+                "nombre": 1
+            }
+        ],
+        "MYCOBACTERIOLOGIE": [
+            {
+                "examen": "Prélèvements génitaux cervico-vaginal",
+                "nombre": 1
+            }
+        ],
+        "Autres": null
+    }
+}

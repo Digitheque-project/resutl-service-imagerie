@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import { RapportHebdo } from './rapport-hebdo.entity';
 import { Archive } from '../archive/archive.entity';
+import { PatientClientService } from '../patient-client/patient-client.service';
 
 @Injectable()
 export class RapportHebdoService {
@@ -13,6 +14,7 @@ export class RapportHebdoService {
     private readonly rapportRepo: Repository<RapportHebdo>,
     @InjectRepository(Archive)
     private readonly archiveRepo: Repository<Archive>,
+    private readonly patientClient: PatientClientService,
   ) {}
 
   private getWeekBounds(date: Date = new Date()): { from: string; to: string; semaine: number; annee: number } {
@@ -50,6 +52,29 @@ export class RapportHebdoService {
       where: { date: Between(from, to + 'T23:59:59.999Z') },
     });
 
+    // ── Fetch patient data for demographics ──
+    const patientIds = [...new Set(archives.map((a) => a.patientId).filter(Boolean))];
+    const patientMap = new Map<string, { sexe?: string; dateNaissance?: string }>();
+    if (patientIds.length > 0) {
+      const results = await Promise.allSettled(patientIds.map((id) => this.patientClient.getPatient(id)));
+      for (let i = 0; i < patientIds.length; i++) {
+        const r = results[i];
+        if (r.status === 'fulfilled' && r.value) {
+          patientMap.set(patientIds[i], {
+            sexe: (r.value.sexe as string) ?? '',
+            dateNaissance: r.value.dateNaissance as string,
+          });
+        }
+      }
+    }
+
+    const normalizeGender = (sexe: string | null | undefined): 'homme' | 'femme' | undefined => {
+      const s = String(sexe ?? '').toLowerCase().trim();
+      if (!s) return undefined;
+      if (s.startsWith('f')) return 'femme';
+      return 'homme';
+    };
+
     const total = archives.length;
     const realises = archives.filter((a) => a.status === 'completed' || a.status === 'validated').length;
     const nonRealises = total - realises;
@@ -80,7 +105,7 @@ export class RapportHebdoService {
     }
     const modalites = Array.from(modalitesMap.entries()).map(([nom, v]) => ({ nom, ...v }));
 
-    // Demography (from Archive patientAge)
+    // ── Demographics ──
     const ageGroups = [
       { tranche: '0-14', min: 0, max: 14 },
       { tranche: '15-30', min: 15, max: 30 },
@@ -89,14 +114,40 @@ export class RapportHebdoService {
       { tranche: '61-75', min: 61, max: 75 },
       { tranche: '75+', min: 76, max: Infinity },
     ];
-    const tranchesAge = ageGroups.map((g) => ({
-      tranche: g.tranche,
-      nombre: archives.filter((a) => a.patientAge != null && a.patientAge >= g.min && a.patientAge <= g.max).length,
-    }));
+    const ageCount = ageGroups.map(() => 0);
+    let hommes = 0;
+    let femmes = 0;
+    let enfants = 0;
 
-    // Gender not available in Archive — estimate from patientId parity as placeholder
-    const hommes = archives.filter((a) => parseInt(a.patientId?.slice(-1) ?? '0', 10) % 2 === 0).length;
-    const femmes = archives.filter((a) => parseInt(a.patientId?.slice(-1) ?? '0', 10) % 2 !== 0).length;
+    for (const a of archives) {
+      // Determine age (archive patientAge, or fallback to patient API dateNaissance)
+      let age: number | undefined = a.patientAge ?? undefined;
+      const p = patientMap.get(a.patientId);
+      if (age === undefined && p?.dateNaissance) {
+        const birthYear = new Date(p.dateNaissance).getFullYear();
+        if (!isNaN(birthYear)) age = new Date().getFullYear() - birthYear;
+      }
+
+      // Classify: enfant (0-14) overrides gender; homme/femme from sexe for adults
+      if (age !== undefined && age <= 14) {
+        enfants++;
+      } else if (p?.sexe) {
+        const gender = normalizeGender(p.sexe);
+        if (gender === 'homme') hommes++;
+        else if (gender === 'femme') femmes++;
+      }
+
+      // Age distribution
+      if (age !== undefined) {
+        const idx = ageGroups.findIndex((g) => age! >= g.min && age! <= g.max);
+        if (idx >= 0) ageCount[idx]++;
+      }
+    }
+
+    const tranchesAge = ageGroups.map((g, i) => ({
+      tranche: g.tranche,
+      nombre: ageCount[i],
+    }));
 
     return {
       date_from: from,
@@ -114,7 +165,7 @@ export class RapportHebdoService {
       demographie: {
         hommes,
         femmes,
-        enfants: tranchesAge.find((t) => t.tranche === '0-14')?.nombre ?? 0,
+        enfants,
         tranches_age: tranchesAge,
       },
     };
