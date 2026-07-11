@@ -1,7 +1,8 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { RapportHebdo } from './rapport-hebdo.entity';
+import { Result } from '../result/entities/result.entity';
 import { PrescriptionClientService } from '../prescription-client/prescription-client.service';
 
 @Injectable()
@@ -11,6 +12,8 @@ export class RapportHebdoService {
   constructor(
     @InjectRepository(RapportHebdo)
     private readonly rapportRepo: Repository<RapportHebdo>,
+    @InjectRepository(Result)
+    private readonly resultRepo: Repository<Result>,
     private readonly prescriptionClient: PrescriptionClientService,
   ) {}
 
@@ -45,8 +48,20 @@ export class RapportHebdoService {
     const from = bounds.from;
     const to = bounds.to;
 
-    // Fetch exams from prescription-service (enriched with patient & result)
+    // Fetch exams from prescription-service (enriched with patient)
     const exams = await this.prescriptionClient.getExamsByDateRange(from, to);
+
+    // Fetch results from local DB (prescription-service enrichment calls production API)
+    const resultIds = exams
+      .map((e: any) => e.idResult)
+      .filter((id: any) => id != null)
+      .map((id: any) => Number(id))
+      .filter((id: number) => !isNaN(id));
+    const results = resultIds.length > 0
+      ? await this.resultRepo.find({ where: { id: In(resultIds) } })
+      : [];
+    const resultMap = new Map<number, Result>();
+    for (const r of results) resultMap.set(r.id, r);
 
     const normalizeGender = (sexe: string | null | undefined): 'homme' | 'femme' | undefined => {
       const s = String(sexe ?? '').toLowerCase().trim();
@@ -57,7 +72,7 @@ export class RapportHebdoService {
 
     const isFait = (exam: any): boolean => {
       if (exam.idResult == null) return false;
-      const r = exam.result;
+      const r = resultMap.get(Number(exam.idResult));
       if (!r) return false;
       if (r.status !== 'COMPLETE' && r.status !== 'VALIDATED') return false;
       if (!r.description?.trim()) return false;
@@ -71,11 +86,13 @@ export class RapportHebdoService {
 
     // Dernier rapport complété
     const completedSorted = exams
-      .filter((e) => isFait(e) && e.result?.createdAt)
-      .sort((a, b) => new Date(b.result.createdAt).getTime() - new Date(a.result.createdAt).getTime());
+      .filter((e) => isFait(e))
+      .map((e: any) => resultMap.get(Number(e.idResult))!)
+      .filter((r) => r.createdAt)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     let dernierRapport = 'Aucun rapport pour le moment';
     if (completedSorted.length > 0) {
-      const d = new Date(completedSorted[0].result.createdAt);
+      const d = new Date(completedSorted[0].createdAt);
       const diffMs = Date.now() - d.getTime();
       const diffMin = Math.floor(diffMs / 60000);
       const diffH = Math.floor(diffMs / 3600000);
@@ -88,14 +105,14 @@ export class RapportHebdoService {
     // Daily breakdown from exam.createdAt
     const jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
     const quotidien = jours.map((jour, idx) => {
-      const dayExams = exams.filter((e) => {
+      const dayExams = exams.filter((e: any) => {
         const d = new Date(e.createdAt);
         return d.getDay() === (idx + 1) % 7;
       });
       return {
         jour,
-        realise: dayExams.filter((e) => isFait(e)).length,
-        non_realise: dayExams.filter((e) => !isFait(e)).length,
+        realise: dayExams.filter((e: any) => isFait(e)).length,
+        non_realise: dayExams.filter((e: any) => !isFait(e)).length,
       };
     });
 
