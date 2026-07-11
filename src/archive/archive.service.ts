@@ -84,7 +84,7 @@ export class ArchiveService {
       description:  result.description,
       conclusion:   result.conclusion,
       imageUrls:    imageUrls.length > 0 ? imageUrls : undefined,
-      status:       result.status ?? 'completed',
+      status:       result.status ?? 'COMPLETE',
     });
 
     return this.archiveRepo.save(archive);

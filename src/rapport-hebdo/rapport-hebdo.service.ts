@@ -76,9 +76,24 @@ export class RapportHebdoService {
     };
 
     const total = archives.length;
-    const realises = archives.filter((a) => a.status === 'completed' || a.status === 'validated').length;
+    const realises = archives.filter((a) => a.status === 'COMPLETE' || a.status === 'VALIDATED').length;
     const nonRealises = total - realises;
-    const taux = total > 0 ? Math.round((realises / total) * 1000) / 10 : 0;
+
+    // Dernier rapport complété
+    const completedSorted = [...archives]
+      .filter((a) => a.status === 'COMPLETE' || a.status === 'VALIDATED')
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    let dernierRapport = 'Aucun rapport';
+    if (completedSorted.length > 0) {
+      const d = new Date(completedSorted[0].createdAt);
+      const diffMs = Date.now() - d.getTime();
+      const diffMin = Math.floor(diffMs / 60000);
+      const diffH = Math.floor(diffMs / 3600000);
+      const diffJ = Math.floor(diffMs / 86400000);
+      if (diffJ > 0) dernierRapport = `il y a ${diffJ} jour${diffJ > 1 ? 's' : ''}`;
+      else if (diffH > 0) dernierRapport = `il y a ${diffH} heure${diffH > 1 ? 's' : ''}`;
+      else dernierRapport = `il y a ${diffMin} minute${diffMin > 1 ? 's' : ''}`;
+    }
 
     // Daily breakdown
     const jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
@@ -89,8 +104,8 @@ export class RapportHebdoService {
       });
       return {
         jour,
-        realise: dayArchives.filter((a) => a.status === 'completed' || a.status === 'validated').length,
-        non_realise: dayArchives.filter((a) => a.status !== 'completed' && a.status !== 'validated').length,
+        realise: dayArchives.filter((a) => a.status === 'COMPLETE' || a.status === 'VALIDATED').length,
+        non_realise: dayArchives.filter((a) => a.status !== 'COMPLETE' && a.status !== 'VALIDATED').length,
       };
     });
 
@@ -100,7 +115,7 @@ export class RapportHebdoService {
       const type = a.examType ?? 'Imagerie';
       if (!modalitesMap.has(type)) modalitesMap.set(type, { realise: 0, non_realise: 0 });
       const m = modalitesMap.get(type)!;
-      if (a.status === 'completed' || a.status === 'validated') m.realise++;
+      if (a.status === 'COMPLETE' || a.status === 'VALIDATED') m.realise++;
       else m.non_realise++;
     }
     const modalites = Array.from(modalitesMap.entries()).map(([nom, v]) => ({ nom, ...v }));
@@ -158,7 +173,7 @@ export class RapportHebdoService {
         total_examens: total,
         examens_realises: realises,
         examens_non_realises: nonRealises,
-        taux_realisation: taux,
+        dernier_rapport: dernierRapport,
       },
       quotidien,
       modalites,
