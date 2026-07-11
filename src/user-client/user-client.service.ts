@@ -43,4 +43,28 @@ export class UserClientService {
       return null;
     }
   }
+
+  async getUsersByChu(chuId: string): Promise<any[]> {
+    try {
+      const token = this.generateToken();
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 15000);
+      const res = await fetch(`${this.baseUrl}/users/${chuId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+      if (!res.ok) {
+        this.logger.warn(`GET /users/${chuId} -> ${res.status}`);
+        return [];
+      }
+      const text = await res.text();
+      if (!text) return [];
+      const body = JSON.parse(text);
+      return Array.isArray(body) ? body : (body.data ?? [body].filter(Boolean));
+    } catch (err) {
+      this.logger.error(`User API error: ${err instanceof Error ? err.message : err}`);
+      return [];
+    }
+  }
 }
