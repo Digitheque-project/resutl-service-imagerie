@@ -74,7 +74,6 @@ export class RapportHebdoService {
       if (exam.idResult == null) return false;
       const r = resultMap.get(Number(exam.idResult));
       if (!r) return false;
-      if (r.status !== 'COMPLETE' && r.status !== 'VALIDATED') return false;
       if (!r.description?.trim()) return false;
       if (!r.conclusion?.trim()) return false;
       return true;
