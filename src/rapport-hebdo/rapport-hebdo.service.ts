@@ -1,9 +1,8 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between } from 'typeorm';
+import { Repository } from 'typeorm';
 import { RapportHebdo } from './rapport-hebdo.entity';
-import { Archive } from '../archive/archive.entity';
-import { PatientClientService } from '../patient-client/patient-client.service';
+import { PrescriptionClientService } from '../prescription-client/prescription-client.service';
 
 @Injectable()
 export class RapportHebdoService {
@@ -12,9 +11,7 @@ export class RapportHebdoService {
   constructor(
     @InjectRepository(RapportHebdo)
     private readonly rapportRepo: Repository<RapportHebdo>,
-    @InjectRepository(Archive)
-    private readonly archiveRepo: Repository<Archive>,
-    private readonly patientClient: PatientClientService,
+    private readonly prescriptionClient: PrescriptionClientService,
   ) {}
 
   private getWeekBounds(date: Date = new Date()): { from: string; to: string; semaine: number; annee: number } {
@@ -48,25 +45,8 @@ export class RapportHebdoService {
     const from = bounds.from;
     const to = bounds.to;
 
-    const archives = await this.archiveRepo.find({
-      where: { date: Between(from, to + 'T23:59:59.999Z') },
-    });
-
-    // ── Fetch patient data for demographics ──
-    const patientIds = [...new Set(archives.map((a) => a.patientId).filter(Boolean))];
-    const patientMap = new Map<string, { sexe?: string; dateNaissance?: string }>();
-    if (patientIds.length > 0) {
-      const results = await Promise.allSettled(patientIds.map((id) => this.patientClient.getPatient(id)));
-      for (let i = 0; i < patientIds.length; i++) {
-        const r = results[i];
-        if (r.status === 'fulfilled' && r.value) {
-          patientMap.set(patientIds[i], {
-            sexe: (r.value.sexe as string) ?? '',
-            dateNaissance: r.value.dateNaissance as string,
-          });
-        }
-      }
-    }
+    // Fetch exams from prescription-service (enriched with patient & result)
+    const exams = await this.prescriptionClient.getExamsByDateRange(from, to);
 
     const normalizeGender = (sexe: string | null | undefined): 'homme' | 'femme' | undefined => {
       const s = String(sexe ?? '').toLowerCase().trim();
@@ -75,17 +55,27 @@ export class RapportHebdoService {
       return 'homme';
     };
 
-    const total = archives.length;
-    const realises = archives.filter((a) => a.status === 'COMPLETE' || a.status === 'VALIDATED').length;
+    const isFait = (exam: any): boolean => {
+      if (exam.idResult == null) return false;
+      const r = exam.result;
+      if (!r) return false;
+      if (r.status !== 'COMPLETE' && r.status !== 'VALIDATED') return false;
+      if (!r.description?.trim()) return false;
+      if (!r.conclusion?.trim()) return false;
+      return true;
+    };
+
+    const total = exams.length;
+    const realises = exams.filter((e) => isFait(e)).length;
     const nonRealises = total - realises;
 
     // Dernier rapport complété
-    const completedSorted = [...archives]
-      .filter((a) => a.status === 'COMPLETE' || a.status === 'VALIDATED')
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    let dernierRapport = 'Aucun rapport';
+    const completedSorted = exams
+      .filter((e) => isFait(e) && e.result?.createdAt)
+      .sort((a, b) => new Date(b.result.createdAt).getTime() - new Date(a.result.createdAt).getTime());
+    let dernierRapport = 'Aucun rapport pour le moment';
     if (completedSorted.length > 0) {
-      const d = new Date(completedSorted[0].createdAt);
+      const d = new Date(completedSorted[0].result.createdAt);
       const diffMs = Date.now() - d.getTime();
       const diffMin = Math.floor(diffMs / 60000);
       const diffH = Math.floor(diffMs / 3600000);
@@ -95,32 +85,32 @@ export class RapportHebdoService {
       else dernierRapport = `il y a ${diffMin} minute${diffMin > 1 ? 's' : ''}`;
     }
 
-    // Daily breakdown
+    // Daily breakdown from exam.createdAt
     const jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
     const quotidien = jours.map((jour, idx) => {
-      const dayArchives = archives.filter((a) => {
-        const d = new Date(a.date);
+      const dayExams = exams.filter((e) => {
+        const d = new Date(e.createdAt);
         return d.getDay() === (idx + 1) % 7;
       });
       return {
         jour,
-        realise: dayArchives.filter((a) => a.status === 'COMPLETE' || a.status === 'VALIDATED').length,
-        non_realise: dayArchives.filter((a) => a.status !== 'COMPLETE' && a.status !== 'VALIDATED').length,
+        realise: dayExams.filter((e) => isFait(e)).length,
+        non_realise: dayExams.filter((e) => !isFait(e)).length,
       };
     });
 
-    // Modality breakdown
+    // Modality breakdown from exam.examensType
     const modalitesMap = new Map<string, { realise: number; non_realise: number }>();
-    for (const a of archives) {
-      const type = a.examType ?? 'Imagerie';
+    for (const e of exams) {
+      const type = e.examensType ?? 'Imagerie';
       if (!modalitesMap.has(type)) modalitesMap.set(type, { realise: 0, non_realise: 0 });
       const m = modalitesMap.get(type)!;
-      if (a.status === 'COMPLETE' || a.status === 'VALIDATED') m.realise++;
+      if (isFait(e)) m.realise++;
       else m.non_realise++;
     }
     const modalites = Array.from(modalitesMap.entries()).map(([nom, v]) => ({ nom, ...v }));
 
-    // ── Demographics ──
+    // Demographics from exam.patient (already enriched by prescription-service)
     const ageGroups = [
       { tranche: '0-14', min: 0, max: 14 },
       { tranche: '15-30', min: 15, max: 30 },
@@ -134,25 +124,29 @@ export class RapportHebdoService {
     let femmes = 0;
     let enfants = 0;
 
-    for (const a of archives) {
-      // Determine age (archive patientAge, or fallback to patient API dateNaissance)
-      let age: number | undefined = a.patientAge ?? undefined;
-      const p = patientMap.get(a.patientId);
-      if (age === undefined && p?.dateNaissance) {
-        const birthYear = new Date(p.dateNaissance).getFullYear();
+    for (const e of exams) {
+      const patient = e.patient;
+      if (!patient) continue;
+
+      let age: number | undefined;
+      if (patient.dateNaissance) {
+        const birthYear = new Date(patient.dateNaissance).getFullYear();
         if (!isNaN(birthYear)) age = new Date().getFullYear() - birthYear;
       }
-
-      // Classify: enfant (0-14) overrides gender; homme/femme from sexe for adults
-      if (age !== undefined && age <= 14) {
-        enfants++;
-      } else if (p?.sexe) {
-        const gender = normalizeGender(p.sexe);
-        if (gender === 'homme') hommes++;
-        else if (gender === 'femme') femmes++;
+      if (age === undefined && patient.age != null) {
+        age = Number(patient.age);
       }
 
-      // Age distribution
+      const gender = normalizeGender(patient.sexe);
+
+      if (age !== undefined && age <= 14) {
+        enfants++;
+      } else if (gender === 'homme') {
+        hommes++;
+      } else if (gender === 'femme') {
+        femmes++;
+      }
+
       if (age !== undefined) {
         const idx = ageGroups.findIndex((g) => age! >= g.min && age! <= g.max);
         if (idx >= 0) ageCount[idx]++;

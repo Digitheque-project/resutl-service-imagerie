@@ -3,10 +3,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { RapportHebdo } from './rapport-hebdo.entity';
 import { RapportHebdoService } from './rapport-hebdo.service';
 import { RapportHebdoController } from './rapport-hebdo.controller';
-import { Archive } from '../archive/archive.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([RapportHebdo, Archive])],
+  imports: [TypeOrmModule.forFeature([RapportHebdo])],
   providers: [RapportHebdoService],
   controllers: [RapportHebdoController],
   exports: [RapportHebdoService],
