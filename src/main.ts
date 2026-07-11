@@ -10,10 +10,19 @@ import * as path from 'path';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  const uploadDir = path.resolve(process.env.UPLOAD_DIR || './uploads');
-  app.use('/uploads', express.static(uploadDir));
-
   app.enableCors({ origin: '*', credentials: true });
+
+  const uploadDir = path.resolve(process.env.UPLOAD_DIR || './uploads');
+  app.use('/uploads', (req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    if (req.method === 'OPTIONS') {
+      res.sendStatus(204);
+      return;
+    }
+    next();
+  }, express.static(uploadDir));
 
   app.useGlobalPipes(
     new ValidationPipe({

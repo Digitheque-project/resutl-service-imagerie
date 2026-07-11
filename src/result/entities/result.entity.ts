@@ -4,6 +4,7 @@ import {
   Column,
   OneToOne,
   JoinColumn,
+  CreateDateColumn,
 } from 'typeorm';
 
 import { ResultType, ResultStatus } from '../result.enums';
@@ -42,6 +43,9 @@ export class Result {
     default: ResultStatus.PENDING,
   })
   status!: ResultStatus;
+
+  @CreateDateColumn()
+  createdAt!: Date;
 
   @OneToOne(() => LabResult, (lab) => lab.result, { cascade: true, eager: true })
   @JoinColumn()
