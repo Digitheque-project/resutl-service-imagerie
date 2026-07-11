@@ -36,8 +36,8 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter());
 
   const config = new DocumentBuilder()
-    .setTitle('Result API')
-    .setDescription('Medical results management API')
+    .setTitle('Result API — Rapport Hebdo Imagerie')
+    .setDescription('Medical results management API — Rapport hebdomadaire du service d\'imagerie médicale')
     .setVersion('1.0')
     .build();
 

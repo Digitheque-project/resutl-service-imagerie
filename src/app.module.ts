@@ -7,6 +7,7 @@ import { ArchiveModule } from './archive/archive.module';
 import { StorageClientModule } from './storage-client/storage-client.module';
 import { UploadTestModule } from './upload-test/upload-test.module';
 import { PatientClientModule } from './patient-client/patient-client.module';
+import { RapportHebdoModule } from './rapport-hebdo/rapport-hebdo.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { PatientClientModule } from './patient-client/patient-client.module';
     UploadTestModule,
     PatientClientModule,
     ResultModule,
+    RapportHebdoModule,
   ],
 })
 export class AppModule {}
