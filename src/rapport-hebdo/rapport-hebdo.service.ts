@@ -83,15 +83,13 @@ export class RapportHebdoService {
     const realises = exams.filter((e) => isFait(e)).length;
     const nonRealises = total - realises;
 
-    // Dernier rapport complété
-    const completedSorted = exams
-      .filter((e) => isFait(e))
-      .map((e: any) => resultMap.get(Number(e.idResult))!)
-      .filter((r) => r.createdAt)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    // Dernier rapport hebdomadaire généré
+    const lastRapport = await this.rapportRepo.findOne({
+      order: { createdAt: 'DESC' },
+    });
     let dernierRapport = 'Aucun rapport pour le moment';
-    if (completedSorted.length > 0) {
-      const d = new Date(completedSorted[0].createdAt);
+    if (lastRapport) {
+      const d = new Date(lastRapport.createdAt);
       const diffMs = Date.now() - d.getTime();
       const diffMin = Math.floor(diffMs / 60000);
       const diffH = Math.floor(diffMs / 3600000);
