@@ -30,16 +30,16 @@ export class RapportHebdoController {
     return this.service.findAll();
   }
 
+  @Get('rapport/hebdo/alert')
+  @ApiOperation({ summary: 'Vérifier si un rapport doit être généré (alerte si après vendredi sans rapport)' })
+  async checkAlert() {
+    return this.service.checkAlert();
+  }
+
   @Get('rapport/hebdo/:id')
   @ApiOperation({ summary: 'Détail d\'un rapport hebdomadaire stocké' })
   @ApiParam({ name: 'id', description: 'UUID du rapport' })
   async findOne(@Param('id') id: string) {
     return this.service.findOne(id);
-  }
-
-  @Get('rapport/hebdo/alert')
-  @ApiOperation({ summary: 'Vérifier si un rapport doit être généré (alerte si après vendredi sans rapport)' })
-  async checkAlert() {
-    return this.service.checkAlert();
   }
 }
