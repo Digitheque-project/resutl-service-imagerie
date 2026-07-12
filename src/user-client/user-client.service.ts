@@ -18,7 +18,7 @@ export class UserClientService {
     if (!this.token) {
       this.token = jwt.sign({}, this.jwtSecret, { expiresIn: '1h' });
     }
-    return this.token;
+    return this.token!;
   }
 
   async getUser(userId: string): Promise<{ id?: string; firstname?: string; name?: string; job?: string } | null> {
