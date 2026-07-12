@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -131,12 +131,47 @@ export class ResultService {
     return this.addImaging(input);
   }
 
+  private readonly logger = new Logger(ResultService.name);
+  private readonly notifUrl = process.env.NOTIFICATION_API_URL || 'http://localhost:3005';
+
+  private async sendNotification(userId: string, title: string, message: string, data?: Record<string, any>) {
+    try {
+      this.logger.log(`Envoi notification → ${userId}: ${title}`);
+      const res = await fetch(`${this.notifUrl}/notifications`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, title, message, source: 'result', type: 'new_images', data }),
+      });
+      if (!res.ok) {
+        this.logger.warn(`Notification API répond ${res.status}`);
+      } else {
+        this.logger.log(`Notification envoyée avec succès → ${userId}`);
+      }
+    } catch (err) {
+      this.logger.warn(`Impossible d'envoyer la notification: ${err.message}`);
+    }
+  }
+
   // ── UPDATE IMAGING WITH FILE ─────────────────────────────
   async updateImagingUrls(imagingId: number, urls: string[]): Promise<ImagingResult> {
     const imaging = await this.findOneImaging(imagingId);
     if (!imaging.imageUrl) imaging.imageUrl = [];
     imaging.imageUrl.push(...urls);
-    return this.imagingRepo.save(imaging);
+    const saved = await this.imagingRepo.save(imaging);
+
+    const parentResult = imaging.result;
+    if (parentResult?.doctorId) {
+      await this.sendNotification(
+        parentResult.doctorId,
+        'Nouvelles images disponibles',
+        `Le technicien a ajouté ${urls.length} image(s) à l'examen. Veuillez ajouter la conclusion et le compte-rendu.`,
+        { resultId: parentResult.id, examenId: parentResult.examenId },
+      );
+    } else {
+      this.logger.warn(`Impossible d'envoyer notification: doctorId manquant (imaging #${imagingId}, result #${parentResult?.id})`);
+    }
+
+    return saved;
   }
 
   // ── UPDATE STATUS ────────────────────────────────────────
@@ -236,7 +271,7 @@ export class ResultService {
       ),
     );
 
-    return this.createWithImaging({
+    const result = await this.createWithImaging({
       patientId,
       doctorId,
       type: ResultType.IMAGING,
@@ -249,6 +284,19 @@ export class ResultService {
         imageUrl: urls.map((u) => u.url),
       },
     });
+
+    if (result.doctorId && files.length > 0) {
+      this.sendNotification(
+        result.doctorId,
+        'Nouvelles images disponibles',
+        `${files.length} image(s) ont été ajoutées à l\'examen par le technicien. Veuillez ajouter la conclusion et le compte-rendu.`,
+        { resultId: result.id, examenId: result.examenId, patientId },
+      );
+    } else {
+      this.logger.warn(`Notification non envoyée: doctorId=${result.doctorId}, files=${files.length}`);
+    }
+
+    return result;
   }
 
   async findByExamen(examenId: string): Promise<Result | null> {
