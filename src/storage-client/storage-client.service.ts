@@ -23,8 +23,7 @@ export class StorageClientService {
       const filePath = path.join(this.uploadDir, fileName);
       fs.writeFileSync(filePath, buffer);
 
-      const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
-      const url = `http://localhost:${port}/uploads/${fileName}`;
+      const url = `/uploads/${fileName}`;
 
       return { fileName, url, path: filePath };
     } catch (error) {
