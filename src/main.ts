@@ -1,4 +1,6 @@
 import 'reflect-metadata';
+import { setDefaultResultOrder } from 'dns';
+import { setDefaultAutoSelectFamily } from 'net';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
@@ -6,6 +8,11 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { HttpExceptionFilter } from './common/http-exception.filter';
 import * as express from 'express';
 import * as path from 'path';
+
+// Évite les timeouts de connexion (Neon...) sur les machines sans route IPv6 :
+// désactive le dual-stack "Happy Eyeballs" qui tente IPv6 en parallèle d'IPv4.
+setDefaultResultOrder('ipv4first');
+setDefaultAutoSelectFamily(false);
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
