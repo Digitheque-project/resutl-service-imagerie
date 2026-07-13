@@ -84,8 +84,9 @@ export class RapportHebdoService {
     const nonRealises = total - realises;
 
     // Dernier rapport hebdomadaire généré
-    const lastRapport = await this.rapportRepo.findOne({
+    const [lastRapport] = await this.rapportRepo.find({
       order: { createdAt: 'DESC' },
+      take: 1,
     });
     let dernierRapport = 'Aucun rapport pour le moment';
     if (lastRapport) {
