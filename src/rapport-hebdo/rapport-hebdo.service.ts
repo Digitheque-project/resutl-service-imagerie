@@ -79,9 +79,13 @@ export class RapportHebdoService {
       return true;
     };
 
+    const isTermine = (exam: any): boolean => exam.statut === 'TERMINER' || exam.statut === 'TERMINEE';
+    const enAttenteImage = (exam: any): boolean => isTermine(exam) && exam.idResult == null;
+
     const total = exams.length;
     const realises = exams.filter((e) => isFait(e)).length;
     const nonRealises = total - realises;
+    const enAttenteImageCount = exams.filter((e) => enAttenteImage(e)).length;
 
     // Dernier rapport hebdomadaire généré
     const [lastRapport] = await this.rapportRepo.find({
@@ -115,12 +119,13 @@ export class RapportHebdoService {
     });
 
     // Modality breakdown from exam.examensType
-    const modalitesMap = new Map<string, { realise: number; non_realise: number }>();
+    const modalitesMap = new Map<string, { realise: number; non_realise: number; en_attente_image: number }>();
     for (const e of exams) {
       const type = e.examensType ?? 'Imagerie';
-      if (!modalitesMap.has(type)) modalitesMap.set(type, { realise: 0, non_realise: 0 });
+      if (!modalitesMap.has(type)) modalitesMap.set(type, { realise: 0, non_realise: 0, en_attente_image: 0 });
       const m = modalitesMap.get(type)!;
       if (isFait(e)) m.realise++;
+      else if (enAttenteImage(e)) m.en_attente_image++;
       else m.non_realise++;
     }
     const modalites = Array.from(modalitesMap.entries()).map(([nom, v]) => ({ nom, ...v }));
@@ -182,6 +187,7 @@ export class RapportHebdoService {
         total_examens: total,
         examens_realises: realises,
         examens_non_realises: nonRealises,
+        examens_en_attente_image: enAttenteImageCount,
         dernier_rapport: dernierRapport,
       },
       quotidien,
