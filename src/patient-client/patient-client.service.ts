@@ -5,16 +5,16 @@ import { ConfigService } from '@nestjs/config';
 export class PatientClientService {
   private readonly logger = new Logger(PatientClientService.name);
   private readonly baseUrl: string;
-  private readonly chuId: string;
+  private readonly chuIdPatient: string;
 
   constructor(config: ConfigService) {
     this.baseUrl = config.get<string>('PATIENT_API_URL') ?? 'https://acceuil-back-production.up.railway.app';
-    this.chuId   = config.get<string>('PATIENT_CHU_ID') ?? '';
+    this.chuIdPatient = config.get<string>('PATIENT_CHU_ID_1') ?? '';
   }
 
   async getPatient(idPermanent: string): Promise<Record<string, unknown> | null> {
     try {
-      const url = `${this.baseUrl}/accueil/patients/${idPermanent}?chuId=${this.chuId}`;
+      const url = `${this.baseUrl}/accueil/patients/${idPermanent}?chuId=${this.chuIdPatient}`;
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 8000);
       const res = await fetch(url, { signal: controller.signal });
