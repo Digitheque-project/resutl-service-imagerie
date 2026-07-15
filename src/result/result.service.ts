@@ -292,23 +292,8 @@ export class ResultService {
         `${files.length} image(s) ont été ajoutées à l\'examen par le technicien. Veuillez ajouter la conclusion et le compte-rendu.`,
         { resultId: result.id, examenId: result.examenId, patientId },
       );
-    }
-    // Also broadcast to all medecins
-    try {
-      const res = await fetch(`${this.notifUrl}/notifications/broadcast/role/medecin`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: 'Nouvelles images disponibles',
-          message: `Le technicien a ajouté ${files.length} image(s) à l'examen. Veuillez ajouter la conclusion et le compte-rendu.`,
-          source: 'result',
-          type: 'new_images',
-          data: { resultId: result.id, examenId: result.examenId, patientId },
-        }),
-      });
-      if (!res.ok) this.logger.warn(`Broadcast medecin répond ${res.status}`);
-    } catch (err) {
-      this.logger.warn(`Impossible d'envoyer le broadcast medecin: ${err.message}`);
+    } else {
+      this.logger.warn(`Notification non envoyée: doctorId=${result.doctorId}, files=${files.length}`);
     }
 
     return result;
