@@ -132,7 +132,7 @@ export class ResultService {
   }
 
   private readonly logger = new Logger(ResultService.name);
-  private readonly notifUrl = process.env.NOTIFICATION_API_URL || 'http://localhost:3005';
+  private readonly notifUrl = process.env.NOTIFICATION_API_URL || 'https://notificqtion-v2.onrender.com';
 
   private async sendNotification(userId: string, title: string, message: string, data?: Record<string, any>) {
     try {
@@ -285,15 +285,30 @@ export class ResultService {
       },
     });
 
-    if (result.doctorId && files.length > 0) {
+    if (result.doctorId) {
       this.sendNotification(
         result.doctorId,
         'Nouvelles images disponibles',
         `${files.length} image(s) ont été ajoutées à l\'examen par le technicien. Veuillez ajouter la conclusion et le compte-rendu.`,
         { resultId: result.id, examenId: result.examenId, patientId },
       );
-    } else {
-      this.logger.warn(`Notification non envoyée: doctorId=${result.doctorId}, files=${files.length}`);
+    }
+    // Also broadcast to all medecins
+    try {
+      const res = await fetch(`${this.notifUrl}/notifications/broadcast/role/medecin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: 'Nouvelles images disponibles',
+          message: `Le technicien a ajouté ${files.length} image(s) à l'examen. Veuillez ajouter la conclusion et le compte-rendu.`,
+          source: 'result',
+          type: 'new_images',
+          data: { resultId: result.id, examenId: result.examenId, patientId },
+        }),
+      });
+      if (!res.ok) this.logger.warn(`Broadcast medecin répond ${res.status}`);
+    } catch (err) {
+      this.logger.warn(`Impossible d'envoyer le broadcast medecin: ${err.message}`);
     }
 
     return result;
