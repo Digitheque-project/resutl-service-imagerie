@@ -163,8 +163,8 @@ export class ResultService {
     if (parentResult?.doctorId) {
       await this.sendNotification(
         parentResult.doctorId,
-        'Nouvelles images disponibles',
-        `Le technicien a ajouté ${urls.length} image(s) à l'examen. Veuillez ajouter la conclusion et le compte-rendu.`,
+        'Import terminé — images disponibles',
+        `${urls.length} image(s) supplémentaire(s) ont été importées pour l'examen.`,
         { resultId: parentResult.id, examenId: parentResult.examenId },
       );
     } else {
@@ -286,10 +286,10 @@ export class ResultService {
     });
 
     if (result.doctorId) {
-      this.sendNotification(
+      await this.sendNotification(
         result.doctorId,
-        'Nouvelles images disponibles',
-        `${files.length} image(s) ont été ajoutées à l\'examen par le technicien. Veuillez ajouter la conclusion et le compte-rendu.`,
+        'Import terminé — images disponibles',
+        `${files.length} image(s) ont été importées pour l'examen.`,
         { resultId: result.id, examenId: result.examenId, patientId },
       );
     } else {
