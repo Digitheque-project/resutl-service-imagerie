@@ -118,8 +118,8 @@ export class ArchiveService {
   }
 
   async findAll(
-    page: number,
-    limit: number,
+    page?: number,
+    limit?: number,
     filters?: {
       search?: string;
       type?: string;
@@ -134,7 +134,7 @@ export class ArchiveService {
     if (filters?.search && filters.search.length >= 2) {
       const s = `%${filters.search}%`;
       qb.andWhere(
-        '(a.patientFirstName LIKE :s OR a.patientLastName LIKE :s OR a.prescriberLastName LIKE :s OR a.examinerLastName LIKE :s OR CAST(a.id AS TEXT) LIKE :s)',
+        '(a.patientFirstName LIKE :s OR a.patientLastName LIKE :s OR a.prescriberFirstName LIKE :s OR a.prescriberLastName LIKE :s OR a.examinerFirstName LIKE :s OR a.examinerLastName LIKE :s OR a.description LIKE :s OR a.conclusion LIKE :s OR CAST(a.id AS TEXT) LIKE :s)',
         { s },
       );
     }
@@ -168,7 +168,10 @@ export class ArchiveService {
     qb.orderBy('a.createdAt', 'DESC');
 
     const total = await qb.getCount();
-    let data = await qb.skip((page - 1) * limit).take(limit).getMany();
+    if (page && limit) {
+      qb.skip((page - 1) * limit).take(limit);
+    }
+    let data = await qb.getMany();
 
     data = await this.enrichArchives(data);
 

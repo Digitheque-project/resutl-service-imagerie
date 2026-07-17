@@ -8,7 +8,7 @@ export class ArchiveController {
   constructor(private readonly service: ArchiveService) {}
 
   @Get('archives')
-  @ApiOperation({ summary: 'List archived results (paginated, filterable)' })
+  @ApiOperation({ summary: 'List archived results (filterable)' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })
   @ApiQuery({ name: 'search', required: false })
@@ -18,8 +18,8 @@ export class ArchiveController {
   @ApiQuery({ name: 'dateFrom', required: false })
   @ApiQuery({ name: 'dateTo', required: false })
   async findAll(
-    @Query('page') page: string = '1',
-    @Query('limit') limit: string = '8',
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
     @Query('search') search?: string,
     @Query('type') type?: string,
     @Query('prescripteur') prescripteur?: string,
@@ -28,7 +28,7 @@ export class ArchiveController {
     @Query('dateTo') dateTo?: string,
   ) {
     const { data, total } = await this.service.findAll(
-      +page, +limit, { search, type, prescripteur, examinateur, dateFrom, dateTo },
+      page ? +page : undefined, limit ? +limit : undefined, { search, type, prescripteur, examinateur, dateFrom, dateTo },
     );
 
     const mapped = data.map((a) => ({
@@ -64,10 +64,10 @@ export class ArchiveController {
     return {
       data: mapped,
       pagination: {
-        page: +page,
-        limit: +limit,
+        page: 1,
+        limit: mapped.length,
         totalItems: total,
-        totalPages: Math.ceil(total / +limit),
+        totalPages: 1,
       },
     };
   }
