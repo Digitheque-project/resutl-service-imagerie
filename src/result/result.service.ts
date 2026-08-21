@@ -50,7 +50,16 @@ export class ResultService {
   }
 
   // ── FIND ALL ─────────────────────────────────────────────
-  findAll(): Promise<Result[]> {
+  findAll(search?: string): Promise<Result[]> {
+    if (search && search.trim().length >= 2) {
+      const s = `%${search.trim()}%`;
+      return this.resultRepo
+        .createQueryBuilder('r')
+        .leftJoinAndSelect('r.lab', 'lab')
+        .leftJoinAndSelect('r.imaging', 'imaging')
+        .where('r.description ILIKE :s OR r.conclusion ILIKE :s OR CAST(r.id AS TEXT) LIKE :s', { s })
+        .getMany();
+    }
     return this.resultRepo.find({
       relations: { lab: true, imaging: true },
     });

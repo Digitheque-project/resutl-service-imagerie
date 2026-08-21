@@ -1,6 +1,6 @@
 import {
   Controller, Get, Post, Patch,
-  Param, Body, UploadedFiles, UseInterceptors,
+  Param, Body, Query, UploadedFiles, UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiParam, ApiConsumes, ApiBody } from '@nestjs/swagger';
@@ -25,9 +25,9 @@ export class ResultController {
 
   // ── GET ──
   @Get()
-  @ApiOperation({ summary: 'Get all results (with patient info)' })
-  async findAll() {
-    const results = await this.service.findAll();
+  @ApiOperation({ summary: 'Get all results (with patient info, filterable by search)' })
+  async findAll(@Query('search') search?: string) {
+    const results = await this.service.findAll(search);
     return Promise.all(results.map(async (r) => ({
       ...r,
       patient: r.patientId ? await this.patientClient.getPatient(r.patientId) : null,
