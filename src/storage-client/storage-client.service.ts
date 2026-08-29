@@ -21,7 +21,20 @@ export class StorageClientService {
     mimeType: string,
   ): Promise<{ fileName: string; url: string; path: string }> {
     if (this.storageServiceUrl) {
-      return this.uploadToStorageService(buffer, originalName, mimeType);
+      try {
+        return await this.uploadToStorageService(buffer, originalName, mimeType);
+      } catch (error) {
+        // Confirmé en conditions réelles : le service de stockage externe
+        // répond 429 (quota épuisé côté fournisseur) et fait échouer TOUT
+        // upload d'image, alors qu'un repli local existe déjà dans ce même
+        // fichier et n'était jamais utilisé une fois STORAGE_SERVICE_URL
+        // configuré. On bascule sur ce repli plutôt que de bloquer
+        // durablement la validation des comptes rendus d'imagerie.
+        this.logger.warn(
+          `Stockage externe indisponible (${error instanceof Error ? error.message : 'erreur inconnue'}), repli sur le stockage local.`,
+        );
+        return this.uploadLocally(buffer, originalName, mimeType);
+      }
     }
     return this.uploadLocally(buffer, originalName, mimeType);
   }
