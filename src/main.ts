@@ -19,6 +19,14 @@ async function bootstrap() {
 
   app.enableCors({ origin: '*', credentials: true });
 
+  // Préfixe unique pour passer par la passerelle CHU (registre gateway :
+  // prefix 'imagerie-results', convention /<prefix>/api/... comme les
+  // autres services) au lieu d'appels directs à ce service. /uploads
+  // (middleware Express brut, hors routage Nest) n'est volontairement PAS
+  // concerné : les URLs de fichiers déjà renvoyées par l'API restent
+  // valides telles quelles.
+  app.setGlobalPrefix('imagerie-results/api');
+
   const uploadDir = path.resolve(process.env.UPLOAD_DIR || './uploads');
   app.use('/uploads', (req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -49,7 +57,12 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document);
+  // useGlobalPrefix: true — sans quoi la doc reste sur /docs (hors préfixe),
+  // donc jamais atteignable via la gateway (dont le proxy ne route que sous
+  // /imagerie-results). Avec, elle suit la convention /<prefix>/api/docs
+  // partagée par les autres services, sans avoir besoin d'un docsPath
+  // particulier côté registre gateway.
+  SwaggerModule.setup('docs', app, document, { useGlobalPrefix: true });
 
   const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3001;
   await app.listen(port);
