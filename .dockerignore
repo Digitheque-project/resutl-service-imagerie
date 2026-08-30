@@ -1,0 +1,10 @@
+node_modules
+dist
+.git
+Dockerfile
+.dockerignore
+.env
+uploads
+data
+tsconfig.build.tsbuildinfo
+rapport_laboratoire_chu.json
